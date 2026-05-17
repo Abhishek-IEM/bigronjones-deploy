@@ -380,7 +380,7 @@ export default function Dashboard() {
             ctaHref="https://calendly.com/bigronjonesllc/discovery-call"
             ctaExternal
           />
-          <div className="grid gap-5 lg:grid-cols-[280px_1fr]">
+          <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-[280px_1fr]">
             <PlaylistsCard logActivity />
             <TrainingModulesLockedCard />
           </div>
@@ -526,7 +526,7 @@ export default function Dashboard() {
             </span>
           </button>
           {keysOpen && (
-            <div className="grid gap-5 border-t border-[#1a1a1a] p-6 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 border-t border-[#1a1a1a] p-4 sm:p-6 md:grid-cols-3">
               <KeyItem
                 num="01"
                 title="Watch the Day's Video"
@@ -547,7 +547,7 @@ export default function Dashboard() {
         </div>
 
         {/* MAIN: Playlists (left) + Training Modules day list (right) */}
-        <div className="mb-6 grid gap-5 lg:grid-cols-[280px_1fr]">
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-[280px_1fr]">
           <PlaylistsCard logActivity />
           <TrainingModulesUnlockedCard
             modules={data.modules}
@@ -559,7 +559,7 @@ export default function Dashboard() {
         </div>
 
         {/* Selected day video + checklist + metrics */}
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.9fr]">
+        <div className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-[1.2fr_0.9fr]">
           {/* Video + module info */}
           <div className="space-y-6">
             <div className="border border-[#1a1a1a] bg-[#0f0f0f] p-6">

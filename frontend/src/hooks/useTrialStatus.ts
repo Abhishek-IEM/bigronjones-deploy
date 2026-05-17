@@ -3,6 +3,7 @@ import { authHeaders } from "@/auth/api";
 import { supabase } from "@/auth/supabase";
 
 export type TrialStatus = {
+  role: "user" | "admin" | "super_admin" | null;
   paymentStatus: string | null;
   programType: string | null;
   hasBookedCalendly: boolean;
@@ -17,9 +18,11 @@ export type TrialStatus = {
   trialDay: number | null; // 1..7 or null when not started
   trialIsActive: boolean;
   trialIsComplete: boolean;
+  isAdmin: boolean; // role is admin OR super_admin
 };
 
 const EMPTY: TrialStatus = {
+  role: null,
   paymentStatus: null,
   programType: null,
   hasBookedCalendly: false,
@@ -33,6 +36,7 @@ const EMPTY: TrialStatus = {
   trialDay: null,
   trialIsActive: false,
   trialIsComplete: false,
+  isAdmin: false,
 };
 
 function deriveDay(start: string | null) {
@@ -80,7 +84,9 @@ export function useTrialStatus(): TrialStatus & { loading: boolean } {
         const u = json.user || {};
         const trialStartDate: string | null = u.trialStartDate ?? null;
         const trialCompletedAt: string | null = u.trialCompletedAt ?? null;
+        const role: TrialStatus["role"] = u.role ?? null;
         const next: TrialStatus = {
+          role,
           paymentStatus: u.paymentStatus ?? null,
           programType: u.programType ?? null,
           hasBookedCalendly: !!u.hasBookedCalendly,
@@ -94,6 +100,7 @@ export function useTrialStatus(): TrialStatus & { loading: boolean } {
           trialDay: deriveDay(trialStartDate),
           trialIsActive: !!trialStartDate && !trialCompletedAt,
           trialIsComplete: !!trialCompletedAt,
+          isAdmin: role === "admin" || role === "super_admin",
         };
         if (mounted) {
           setState(next);

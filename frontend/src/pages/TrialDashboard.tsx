@@ -162,6 +162,40 @@ export default function TrialDashboard() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewDraft, setReviewDraft] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
+  // Days the user manually unlocked early by clicking the lock icon. Persisted
+  // to localStorage so an unlock survives a refresh. Auto-unlock by date still
+  // runs in parallel — the union of the two is what ModuleLadder displays.
+  const [manualUnlocks, setManualUnlocks] = useState<Set<number>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try {
+      const raw = localStorage.getItem("brj.trial.manualUnlocks");
+      if (!raw) return new Set();
+      const parsed = JSON.parse(raw) as unknown;
+      if (!Array.isArray(parsed)) return new Set();
+      return new Set(
+        parsed
+          .map((n) => Number(n))
+          .filter((n) => Number.isInteger(n) && n >= 1 && n <= 7),
+      );
+    } catch {
+      return new Set();
+    }
+  });
+  function unlockDay(day: number) {
+    setManualUnlocks((prev) => {
+      if (prev.has(day)) return prev;
+      const next = new Set(prev).add(day);
+      try {
+        localStorage.setItem(
+          "brj.trial.manualUnlocks",
+          JSON.stringify(Array.from(next).sort()),
+        );
+      } catch {
+        // localStorage disabled — non-fatal, in-memory state still works
+      }
+      return next;
+    });
+  }
 
   useEffect(() => {
     document.title = "Your 7-Day Dashboard | BigRonJones®";
@@ -462,6 +496,8 @@ export default function TrialDashboard() {
               program={PROGRAM}
               currentDay={currentDay}
               completedDays={completedDays}
+              manualUnlocks={manualUnlocks}
+              onUnlock={unlockDay}
             />
           )}
           {section === "workouts" && (
@@ -670,15 +706,21 @@ function ModuleLadder({
   program,
   currentDay,
   completedDays,
+  manualUnlocks,
+  onUnlock,
 }: {
   program: Day[];
   currentDay: number;
   completedDays: Set<number>;
+  manualUnlocks: Set<number>;
+  onUnlock: (day: number) => void;
 }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {program.map((day) => {
-        const unlocked = day.day <= currentDay;
+        // A day is open if the schedule has rolled past it OR the user
+        // manually unlocked it by clicking the padlock card.
+        const unlocked = day.day <= currentDay || manualUnlocks.has(day.day);
         const completed = completedDays.has(day.day);
         return (
           <div
@@ -715,9 +757,20 @@ function ModuleLadder({
               {day.focus}
             </p>
             {!unlocked && (
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/55 backdrop-blur-[2px]">
-                <Lock size={20} className="text-white/50" />
-              </div>
+              <button
+                type="button"
+                onClick={() => onUnlock(day.day)}
+                aria-label={`Unlock Day ${day.day}`}
+                className="group absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/65 backdrop-blur-[2px] transition-colors hover:bg-black/50 cursor-pointer"
+              >
+                <Lock
+                  size={22}
+                  className="text-white/60 group-hover:text-[#E8192C] transition-colors"
+                />
+                <span className="font-['DM_Mono'] text-[9px] uppercase tracking-[0.2em] text-white/55 group-hover:text-white">
+                  Click to unlock
+                </span>
+              </button>
             )}
           </div>
         );
@@ -905,7 +958,7 @@ function CheckInSection({
 function HistorySection({ history }: { history: CheckIn[] }) {
   if (history.length === 0) {
     return (
-      <div className="border border-[#1a1a1a] bg-[#0d0d0d] p-10 text-center">
+      <div className="border border-[#1a1a1a] bg-[#0d0d0d] p-6 sm:p-10 text-center">
         <Activity size={28} className="mx-auto text-[#E8192C]/70" />
         <p className="mt-4 font-['DM_Mono'] text-[10px] uppercase tracking-[0.25em] text-white/45">
           Nothing logged yet

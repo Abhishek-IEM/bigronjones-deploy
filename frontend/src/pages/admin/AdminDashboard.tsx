@@ -18,10 +18,12 @@ import {
   ArrowUpRight,
   CheckCircle2,
   Clock3,
+  FileText,
   Loader2,
   MessageSquare,
-  ShieldCheck,
+  PlusCircle,
   Sparkles,
+  UserCheck,
   Users,
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
@@ -29,6 +31,82 @@ import { authHeaders } from "@/auth/api";
 import { adminApi, type SuperAdminDashboardResponse } from "@/auth/adminApi";
 
 const statusColors = ["#f5d77b", "#ffffff", "#c9a54f", "#7d6430"];
+
+const QUICK_ACCESS = [
+  {
+    to: "/admin/content",
+    icon: FileText,
+    label: "Content",
+    hint: "Lead magnets · Instagram links",
+  },
+  {
+    to: "/admin/leads",
+    icon: Users,
+    label: "Leads",
+    hint: "Every name + email captured",
+  },
+  {
+    to: "/admin/trial/users",
+    icon: UserCheck,
+    label: "Trial Users",
+    hint: "Active 7-day trials",
+  },
+  {
+    to: "/admin/trial/feedback",
+    icon: MessageSquare,
+    label: "Feedback",
+    hint: "Reply to daily check-ins",
+  },
+] as const;
+
+function QuickAccessGrid() {
+  return (
+    <section>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div>
+          <p className="font-['DM_Mono'] text-[10px] uppercase tracking-[0.28em] text-[#f5d77b]/75">
+            Quick access
+          </p>
+          <h2 className="mt-1 font-['Bebas_Neue'] text-3xl tracking-[0.08em] text-white">
+            Jump to a section
+          </h2>
+        </div>
+        <Link
+          to="/admin/content/new"
+          className="inline-flex items-center gap-2 rounded-full bg-[#E8192C] px-5 py-2.5 font-['DM_Mono'] text-[10px] uppercase tracking-[0.24em] text-white hover:bg-[#b50f1f] transition-colors"
+        >
+          <PlusCircle size={13} />
+          New lead magnet
+        </Link>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {QUICK_ACCESS.map(({ to, icon: Icon, label, hint }) => (
+          <Link
+            key={to}
+            to={to}
+            className="group rounded-3xl border border-[#2a2417] bg-black/40 p-5 transition-all hover:border-[#E8192C] hover:bg-[#E8192C]/5"
+          >
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div className="rounded-full bg-[#E8192C]/15 p-2.5 text-[#E8192C] group-hover:bg-[#E8192C] group-hover:text-white transition-colors">
+                <Icon size={16} />
+              </div>
+              <ArrowUpRight
+                size={16}
+                className="text-white/30 group-hover:text-[#E8192C] transition-colors"
+              />
+            </div>
+            <p className="font-['Bebas_Neue'] text-2xl tracking-[0.06em] text-white">
+              {label}
+            </p>
+            <p className="mt-1 font-['DM_Sans'] text-xs text-white/50 leading-relaxed">
+              {hint}
+            </p>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function StatCard({
   icon: Icon,
@@ -156,17 +234,25 @@ export default function AdminDashboard() {
     );
   }
 
+  // Regular admins (role === "admin") still get a working dashboard — just
+  // without the super-admin-only analytics + coach-notes panels below.
   if (role !== "super_admin") {
     return (
       <AdminLayout>
-        <div className="rounded-3xl border border-[#2a2417] bg-black/40 p-8 text-center">
-          <ShieldCheck className="mx-auto text-[#f5d77b]" size={28} />
-          <h1 className="mt-4 font-['Bebas_Neue'] text-5xl tracking-[0.08em] text-white">
-            Super admin only
-          </h1>
-          <p className="mt-3 text-sm text-white/60">
-            This control room is reserved for Ron's super-admin role.
-          </p>
+        <div className="space-y-8 text-white">
+          <section className="rounded-3xl border border-[#2a2417] bg-[linear-gradient(135deg,rgba(245,215,123,0.15),rgba(8,8,8,0.98))] p-6 md:p-8">
+            <p className="font-['DM_Mono'] text-[10px] uppercase tracking-[0.3em] text-[#f5d77b]/75">
+              Admin operations
+            </p>
+            <h1 className="mt-3 font-['Bebas_Neue'] text-5xl leading-none tracking-[0.08em] md:text-6xl">
+              Welcome back
+            </h1>
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/65">
+              Manage your content, leads, and trial users from here. Use the
+              quick access cards below to jump into any section.
+            </p>
+          </section>
+          <QuickAccessGrid />
         </div>
       </AdminLayout>
     );
@@ -198,6 +284,8 @@ export default function AdminDashboard() {
             </Link>
           </div>
         </section>
+
+        <QuickAccessGrid />
 
         {loading ? (
           <div className="flex min-h-64 items-center justify-center rounded-3xl border border-[#2a2417] bg-black/40">
@@ -397,8 +485,8 @@ export default function AdminDashboard() {
                   )}
                 </div>
 
-                <div className="overflow-hidden rounded-3xl border border-[#2a2417]">
-                  <table className="w-full text-left text-sm">
+                <div className="overflow-x-auto rounded-3xl border border-[#2a2417]">
+                  <table className="w-full min-w-[480px] text-left text-sm">
                     <thead className="bg-white/5 font-['DM_Mono'] text-[9px] uppercase tracking-[0.24em] text-white/45">
                       <tr>
                         <th className="px-4 py-3">User</th>

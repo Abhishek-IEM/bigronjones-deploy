@@ -1,428 +1,326 @@
 <div align="center">
 
-<img src="frontend/public/assets/ron-hero.jpg" alt="Big Ron Jones" width="100%" />
+<img src="assets/bigronjones/Ron.PNG" alt="Big Ron Jones" width="240" />
 
-# **BIGRONJONES**
+# BIGRONJONES®
 
-### Practical Advice For Your Real World Goals.
+**Practical Advice For Your Real World Goals**
 
-The official website for **Big Ron Jones** — fitness coach, accountability partner, and the team behind 2,000+ real transformations.
+A full-stack coaching platform — lead capture, 7-day oversight trial, premium dashboard, and admin operations. Built for adults 35+ ready to build real structure.
 
-[![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
-[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![React Router](https://img.shields.io/badge/React_Router-7-CA4245?logo=reactrouter&logoColor=white)](https://reactrouter.com)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38BDF8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Supabase](https://img.shields.io/badge/Supabase-Postgres-3FCF8E?logo=supabase&logoColor=white)](https://supabase.com)
-[![Stripe](https://img.shields.io/badge/Stripe-Payments-635BFF?logo=stripe&logoColor=white)](https://stripe.com)
-[![Resend](https://img.shields.io/badge/Resend-Email-000000?logo=resend&logoColor=white)](https://resend.com)
-[![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white)](https://vercel.com)
-
-[Live Site](https://bigronjones.com) · [Issues](https://github.com/manishsingh1309/bigronjones/issues) · [Repository](https://github.com/manishsingh1309/bigronjones)
+[![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tailwind](https://img.shields.io/badge/Tailwind-4-38BDF8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-Postgres-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
+[![Stripe](https://img.shields.io/badge/Stripe-Payments-635BFF?logo=stripe&logoColor=white)](https://stripe.com/)
+[![Vercel](https://img.shields.io/badge/Vercel-Serverless-000?logo=vercel&logoColor=white)](https://vercel.com/)
 
 </div>
 
 ---
 
-## Table of Contents
+## What this is
 
-- [Overview](#overview)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Path Aliases](#path-aliases)
-- [Quick Start](#quick-start)
-- [Available Scripts](#available-scripts)
-- [Environment Variables](#environment-variables)
-- [Lead-Generation Funnel](#lead-generation-funnel)
-- [Routing](#routing)
-- [API Endpoints](#api-endpoints)
-- [Deployment](#deployment)
-- [Database Setup](#database-setup)
-- [Contributing](#contributing)
+BigRonJones runs a coaching business for adults rebuilding their fitness after 35. This repo is the website and operations stack behind it:
+
+- **Public marketing site** — home, about, programs, blog, team, shop, testimonials
+- **Lead-magnet funnel** — Ron pastes a Google Drive / Dropbox / YouTube link in the admin, gets a unique `/free/<slug>` URL, shares it on Instagram. Users fill name + email, the content is emailed instantly.
+- **7-Day Oversight Trial** — $149 Stripe checkout, Calendly activation call, daily check-ins, recovery metrics, Ron's per-day video lessons, manual + automatic day unlock.
+- **Premium dashboard** — post-trial coaching dashboard with progress tracking, charts, and direct messaging.
+- **Admin workspace** — content management (lead magnets), lead viewer with CSV export, trial-user monitoring, feedback inbox, coach notes, super-admin analytics.
+- **Email automation** — transactional emails via Gmail SMTP (Resend fallback), one-click unsubscribe, RFC-8058 compliant, day-1 nurture sequence with cron scheduler.
 
 ---
 
-## Overview
-
-A fitness-coaching marketing site, e-commerce store, and lead-generation platform for Big Ron Jones. The codebase is split into a Vite-built React SPA, a set of Vercel serverless functions, and a small shared layer of pure data and utilities. Single repo, single `package.json`, no monorepo tooling needed.
-
-**What it does:**
-
-- 19 marketing/legal/checkout pages with React Router
-- Stripe-powered shop and consult bookings
-- Resend transactional email (contact, applications, newsletter, lead delivery)
-- Gemini AI blog generation
-- Lead-generation funnel: Instagram → landing page → form → PDF delivery → multi-day email nurture sequence
-- One-click unsubscribe (RFC 8058 compliant) and SEO sitemap/robots generated at build time
-
----
-
-## Tech Stack
-
-| Layer | Choice | Why |
-|---|---|---|
-| Build tool | **Vite 6** | Fast dev server, native ESM, no Webpack config |
-| UI library | **React 19** | Native metadata hoisting (`<title>`/`<meta>`), no helmet dep |
-| Routing | **React Router 7 (declarative)** | Standard SPA routing with layout routes |
-| Styling | **Tailwind CSS 4** + **`@tailwindcss/vite`** | Utility-first, design-token driven |
-| Animation | **Framer Motion** + **GSAP** | Hero/spotlight transitions |
-| 3D | **@splinetool/react-spline** + **Three.js** | Hero atmosphere, interactive scenes |
-| State | **Zustand** | Cart store, lightweight global state |
-| Forms | **react-hook-form** + **Zod** | Lead form validation, type-safe |
-| Backend | **Vercel Serverless Functions** | Web-standard `Request`/`Response` handlers |
-| Database | **Supabase (Postgres)** | Lead funnel, blog persistence, RLS for security |
-| Email | **Resend** | Transactional + audience-based marketing |
-| Payments | **Stripe Checkout** | Hosted checkout, no PCI scope |
-| AI | **Google Gemini 2.0 Flash** | Daily blog generation |
-
----
-
-## Project Structure
-
-The repo is split into three top-level layers — `frontend/`, `backend/`, `shared/` — so anyone reading the code knows immediately whether a file runs in the browser, on a serverless function, or both.
+## Architecture
 
 ```
-bigronjones/
-│
-├── frontend/                     React SPA built by Vite
-│   ├── public/                   Static assets served at /
-│   │   └── assets/pdfs/          Lead-magnet PDFs (drop yours here)
+┌──────────────────────────────────────────────────────────────────────┐
+│                            BROWSER                                   │
+│  Vite + React 19 SPA  ·  TypeScript  ·  Tailwind v4  ·  Framer       │
+│  React Router v7 (data router)  ·  Zustand  ·  React Hook Form + Zod │
+└───────────────┬──────────────────────────────────────┬───────────────┘
+                │ Supabase Auth (Google OAuth + email) │
+                │                                       │
+                │ /api/*                                │ /assets/*
+                ▼                                       │
+┌──────────────────────────────────────────────────────────────────────┐
+│                      VERCEL SERVERLESS API                           │
+│  backend/api/*.ts (one file per endpoint)                            │
+│  Lead capture · Checkout · Webhook handlers · Admin · Cron           │
+│  Runs in Node 20 (@vercel/node 5)                                    │
+└─────┬──────────────────┬─────────────────┬─────────────────┬─────────┘
+      │                  │                 │                 │
+      ▼                  ▼                 ▼                 ▼
+┌──────────┐      ┌──────────────┐    ┌──────────┐    ┌──────────────┐
+│ Supabase │      │ Gmail SMTP   │    │ Stripe   │    │ Calendly     │
+│ Postgres │      │ + Resend     │    │ Checkout │    │ Webhooks     │
+│ + Auth   │      │ (fallback)   │    │ Sessions │    │ (HMAC verify)│
+│ + Storage│      │              │    │ + Cron   │    │              │
+└──────────┘      └──────────────┘    └──────────┘    └──────────────┘
+```
+
+### Request lifecycle (lead capture)
+
+```
+Instagram link  ──►  /free/<slug>  ──►  GET  /api/lead-magnet?slug=…
+                                          │     (Supabase read, view++)
+                                          ▼
+                                       Render LeadCaptureForm
+                                          │
+                       User submits ──►  POST /api/capture-lead
+                                          │
+                                          ├─►  Validate (Zod, shared schema)
+                                          ├─►  Upsert into public.leads
+                                          ├─►  Build email (contentDeliveryEmail)
+                                          ├─►  Send via Gmail SMTP / Resend
+                                          ├─►  Mark pdf_sent = true on success
+                                          └─►  Increment lead_magnets.download_count
+                                                ▼
+                                          Success screen
+```
+
+---
+
+## Project structure
+
+```
+.
+├── frontend/                          ← Vite SPA root
+│   ├── index.html                     ← viewport meta, font preconnect
+│   ├── public/
+│   │   └── assets/                    ← static images, PDFs, OG covers
 │   ├── src/
-│   │   ├── App.tsx               Route definitions (declarative)
-│   │   ├── main.tsx              Entry: BrowserRouter + render
+│   │   ├── main.tsx                   ← app entry, mounts Router
+│   │   ├── App.tsx                    ← route map (public + admin + auth)
+│   │   ├── auth/                      ← Supabase client + admin API client
 │   │   ├── components/
-│   │   │   ├── about/            Hero, philosophy, timeline
-│   │   │   ├── analytics/        Google Analytics (VITE_GA_ID)
-│   │   │   ├── apply/            Multi-step application form
-│   │   │   ├── blog/             Article view, cards, sidebar
-│   │   │   ├── checkout/         Cart, Stripe handoff, success
-│   │   │   ├── contact/          Contact form
-│   │   │   ├── layout/           Navbar, Footer, CustomCursor
-│   │   │   ├── leads/            LeadCaptureForm (funnel)
-│   │   │   ├── sections/         Home page sections
-│   │   │   ├── shared/           PageHeader, FAQs, ProductCard
-│   │   │   ├── shop/             ShopGrid, AddToCartActions
-│   │   │   ├── testimonials/     TestimonialsGrid
-│   │   │   ├── ui/               Toaster, base UI primitives
-│   │   │   ├── RootLayout.tsx    Navbar + Footer chrome
-│   │   │   └── ScrollToTop.tsx   Resets scroll on route change
-│   │   ├── hooks/
-│   │   │   ├── useCart.ts        Zustand cart store
-│   │   │   ├── useToast.ts
-│   │   │   └── useIsMobile.ts
-│   │   ├── pages/                One file per route (20 total)
-│   │   ├── styles/
-│   │   │   └── globals.css       Tailwind v4 source
-│   │   └── vite-env.d.ts
-│   ├── index.html
-│   ├── vite.config.ts            root: __dirname, alias config
-│   ├── tsconfig.json             references app + node configs
-│   ├── tsconfig.app.json         strict, path aliases
-│   └── tsconfig.node.json
+│   │   │   ├── admin/                 ← AdminLayout (mobile drawer), AdminGuard
+│   │   │   ├── auth/                  ← ProtectedRoute
+│   │   │   ├── layout/                ← Navbar, Footer, CustomCursor
+│   │   │   ├── leads/                 ← LeadCaptureForm
+│   │   │   ├── sections/              ← Home page hero + sections
+│   │   │   ├── shop/   blog/   trial/ checkout/
+│   │   │   └── ui/                    ← shared primitives (Toaster, etc.)
+│   │   ├── features/
+│   │   │   └── premium-dashboard/     ← post-trial dashboard
+│   │   ├── hooks/                     ← useAuth, useTrialStatus, useCart…
+│   │   ├── pages/
+│   │   │   ├── Home, About, Programs, Shop, Blog, Team, Consult, Contact
+│   │   │   ├── SignIn / SignUp / ForgotPassword
+│   │   │   ├── FreeLeadMagnet.tsx     ← public /free/:slug landing
+│   │   │   ├── ProgramsTrial.tsx      ← $149 trial pitch
+│   │   │   ├── TrialSuccess.tsx       ← post-checkout
+│   │   │   ├── Dashboard.tsx          ← unlocked trial workspace
+│   │   │   ├── TrialDashboard.tsx     ← Phase-1 view + day cards
+│   │   │   ├── Continue.tsx           ← post-trial enrollment
+│   │   │   └── admin/
+│   │   │       ├── AdminDashboard.tsx        ← Quick Access + analytics
+│   │   │       ├── AdminContentList.tsx      ← lead-magnet CRUD
+│   │   │       ├── AdminContentForm.tsx
+│   │   │       ├── AdminLeads.tsx            ← captured leads + CSV
+│   │   │       ├── AdminTrialUsers.tsx       ← trial monitoring
+│   │   │       ├── AdminTrialFeedback.tsx    ← reply to check-ins
+│   │   │       └── AdminTrialOverview.tsx
+│   │   └── styles/
+│   │       └── globals.css            ← Tailwind v4 + design tokens
+│   ├── tsconfig.app.json
+│   └── vite.config.ts
 │
-├── backend/                      Vercel serverless functions + server libs
-│   ├── api/                      One file per HTTP endpoint
-│   │   ├── apply.ts              POST  application submissions
-│   │   ├── blogs.ts              GET   blog list / single
-│   │   ├── capture-lead.ts       POST  lead funnel — never lose a lead
-│   │   ├── checkout.ts           POST  Stripe Checkout session
-│   │   ├── contact.ts            POST  contact form
-│   │   ├── generate-blogs.ts     POST  Gemini AI blog generator
-│   │   ├── lead-magnet.ts        GET   public magnet by slug
-│   │   ├── newsletter.ts         POST  Resend audience signup
-│   │   ├── send-sequence.ts      GET   cron: nurture email sender
-│   │   └── unsubscribe.ts        GET/POST RFC 8058 one-click
+├── backend/                           ← Vercel serverless functions
+│   ├── api/
+│   │   ├── lead-magnet.ts             ← GET single magnet by slug
+│   │   ├── capture-lead.ts            ← POST lead form → DB + email
+│   │   ├── checkout.ts                ← Stripe checkout session
+│   │   ├── verify-trial-payment.ts
+│   │   ├── link-trial.ts              ← email → auth user binding
+│   │   ├── me.ts                      ← auth identity + role
+│   │   ├── dashboard.ts / metrics.ts / day-complete.ts / trial-feedback.ts
+│   │   ├── newsletter.ts / contact.ts / apply.ts
+│   │   ├── unsubscribe.ts             ← RFC-8058 one-click
+│   │   ├── send-sequence.ts / cron-email-scheduler.ts
+│   │   ├── webhooks-calendly.ts       ← HMAC-verified webhook
+│   │   ├── admin/                     ← protected endpoints
+│   │   │   ├── content.ts / leads.ts / stats.ts
+│   │   │   ├── upload-url.ts          ← signed Supabase Storage URLs
+│   │   │   ├── trial-users.ts / trial-feedback.ts / trial-reply.ts
+│   │   │   └── coach-notes.ts / super-dashboard.ts
+│   │   └── webhooks/   test/
 │   ├── lib/
-│   │   ├── emailTemplates.ts     PDF delivery + nurture HTML
-│   │   ├── email.ts              Resend SDK wrapper
-│   │   └── supabase.ts           Service-role client (cached)
+│   │   ├── supabase.ts                ← service-role client (server only!)
+│   │   ├── auth.ts                    ← Bearer token → user + role
+│   │   ├── adminAuth.ts               ← requireAdmin / requireSuperAdmin
+│   │   ├── mailer.ts                  ← Gmail SMTP (nodemailer)
+│   │   ├── emailTemplates.ts          ← HTML email builders
+│   │   ├── dashboardAccess.ts         ← unlock logic
+│   │   └── webhookUtils.ts            ← Calendly HMAC verify
 │   ├── sql/
-│   │   ├── 01_schema.sql         Tables + RLS policies
-│   │   └── 02_seed_lead_magnets.sql
-│   └── tsconfig.json
+│   │   ├── MIGRATE.sql                ← consolidated, idempotent
+│   │   ├── 01_schema.sql              ← leads + lead_magnets + RLS
+│   │   ├── 02_seed_lead_magnets.sql
+│   │   ├── 03_trial_system.sql
+│   │   ├── 04…08_*.sql                ← incremental migrations
+│   │   └── 09_fix_broken_seed_magnets.sql
+│   └── dev-server.ts                  ← local file-based router (mirrors Vercel)
 │
-├── shared/                       Used by both frontend and backend
-│   ├── data/
-│   │   ├── products.ts           Shop catalog
-│   │   ├── programs.ts           Coaching programs
-│   │   ├── seedBlogs.ts          Initial blog corpus
-│   │   ├── site.ts               Site-wide constants
-│   │   ├── team.ts               Ron, Sean, Dr. Shelia
-│   │   └── testimonials.ts
+├── shared/
 │   └── lib/
-│       ├── animations.ts         Reusable Framer variants
-│       ├── blogStore.ts          Browser-safe blog cache
-│       ├── blogUtils.ts          Slug, reading-time helpers
-│       ├── cn.ts                 Tailwind className helper
-│       ├── leadSchemas.ts        Zod schemas (form + API)
-│       └── ronVoice.ts           AI voice/topic constants
+│       └── leadSchemas.ts             ← Zod schemas used on both ends
 │
 ├── scripts/
-│   └── generate-sitemap.mjs      Writes dist/sitemap.xml + robots.txt
+│   ├── setup-admin.ts                 ← reconcile admin allowlist with Supabase
+│   ├── create-admin-user.ts           ← seed an admin auth user
+│   ├── resend-pending-leads.mjs       ← retry failed email deliveries
+│   └── generate-sitemap.mjs
 │
-├── .env.example                  Documents every env var
-├── .gitignore
-├── eslint.config.mjs
-├── package.json                  Single shared deps for FE + BE
-├── tsconfig.json                 Root: project references
-└── vercel.json                   Functions glob + SPA rewrites
+├── assets/                            ← original brand assets (not served)
+├── .env.example                       ← copy → .env, fill in secrets
+├── vercel.json                        ← rewrites + cron + function runtime
+├── package.json                       ← npm scripts (dev / build / typecheck)
+└── README.md
 ```
 
-**Boundary rules:**
+---
 
-- `frontend/` may **never** import from `backend/`. Server-only code (Resend, Supabase service-role key, Stripe SDK) must stay out of the browser bundle.
-- `backend/` may import from `shared/` and from its own files.
-- `shared/` may import only from itself — no React, no `next/*`, no `node:*` at module top-level. (`backend/lib/blogStore.ts` lazy-loads `node:fs` only when running on the server.)
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| **Frontend** | React 19 · TypeScript 5 · Vite 6 · Tailwind CSS v4 · Framer Motion 12 · React Router v7 · Zustand · React Hook Form + Zod |
+| **Backend** | Vercel Serverless Functions (Node 20) · TypeScript · Standalone `Request → Response` handlers |
+| **Database** | Supabase (Postgres) — row-level security on every table, service-role-only writes for leads |
+| **Auth** | Supabase Auth — Google OAuth (primary) + email/password. Role-gated admin via email allowlist + `users.role` column |
+| **Email** | Gmail SMTP via Nodemailer (primary), Resend (fallback). One-click unsubscribe (RFC 8058) |
+| **Payments** | Stripe Checkout Sessions — trial $149, Phase-2 plans (full / 6-pay / 36-pay) |
+| **Storage** | Supabase Storage — `content-files` bucket, signed uploads, public read |
+| **External** | Calendly webhooks (HMAC verified) for activation calls |
+| **Hosting** | Vercel — frontend as static SPA, `backend/api/**` as serverless functions, daily cron via `vercel.json` |
+| **Analytics** | First-party event logging in `user_activity_log` + Google Analytics |
 
 ---
 
-## Path Aliases
+## Quick start
 
-Defined once in [frontend/vite.config.ts](frontend/vite.config.ts) and mirrored in [frontend/tsconfig.app.json](frontend/tsconfig.app.json). Used **only by frontend code**; backend uses relative imports so Vercel's function builder doesn't need to resolve a `paths` config.
-
-| Alias | Resolves to | Example |
-|---|---|---|
-| `@/components/*` | `frontend/src/components/*` | `import Navbar from "@/components/layout/Navbar"` |
-| `@/hooks/*` | `frontend/src/hooks/*` | `import { useCart } from "@/hooks/useCart"` |
-| `@/pages/*` | `frontend/src/pages/*` | `import Home from "@/pages/Home"` |
-| `@/lib/*` | `shared/lib/*` | `import { cn } from "@/lib/cn"` |
-| `@/data/*` | `shared/data/*` | `import { programs } from "@/data/programs"` |
-| `@/*` | `frontend/src/*` | catch-all |
-
----
-
-## Quick Start
+### 1. Clone + install
 
 ```bash
-# 1. Clone
 git clone https://github.com/manishsingh1309/bigronjones.git
 cd bigronjones
-
-# 2. Install
 npm install
-
-# 3. Set env vars
-cp .env.example .env
-# Edit .env — fill in Supabase, Resend, Stripe keys
-
-# 4. Run dev server
-npm run dev
-# → http://localhost:3000
 ```
 
-> The `npm run dev` server builds the SPA only. Serverless functions don't run locally without `vercel dev` (see [Deployment](#deployment)). The frontend works in dev; API calls 404 until you deploy or run `vercel dev`.
+### 2. Configure environment
+
+Copy the template and fill in secrets:
+
+```bash
+cp .env.example .env
+```
+
+Required values:
+
+| Variable | Where to get it |
+|---|---|
+| `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project settings → API |
+| `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` | Same page, "anon public" key |
+| `SMTP_USER` / `SMTP_PASS` | A Gmail account with 2FA on → [App passwords](https://myaccount.google.com/apppasswords) |
+| `STRIPE_SECRET_KEY` / `VITE_STRIPE_PUBLISHABLE_KEY` | Stripe → Developers → API keys |
+| `ADMIN_EMAILS` / `SUPER_ADMIN_EMAILS` | Comma-separated allowlist of admin emails |
+| `CALENDLY_WEBHOOK_SECRET` | Calendly → Integrations → Webhooks |
+| `CRON_SECRET` | `openssl rand -hex 32` |
+| `SITE_URL` / `VITE_SITE_URL` | `http://localhost:3000` in dev |
+
+### 3. Provision the database
+
+Open the Supabase SQL editor and run each file in `backend/sql/` in numeric order, starting with `MIGRATE.sql`. All migrations are idempotent — safe to re-run.
+
+If you have an existing database with the legacy broken seed magnets, run `09_fix_broken_seed_magnets.sql` to deactivate them.
+
+### 4. Seed your admin user
+
+```bash
+npx tsx scripts/setup-admin.ts
+```
+
+Reads `ADMIN_EMAILS` / `SUPER_ADMIN_EMAILS` from `.env`, demotes any stale admins, and pre-mirrors the new admin into `public.users` with the right role. After this, sign in with that Google account at `http://localhost:3000/auth/login`.
+
+### 5. Run dev
+
+```bash
+npm run dev
+```
+
+- Frontend: http://localhost:3000
+- Backend: http://localhost:8081 (proxied as `/api/*`)
 
 ---
 
-## Available Scripts
+## Available scripts
 
 | Command | What it does |
 |---|---|
-| `npm run dev` | Starts Vite dev server with HMR on `:3000` |
-| `npm run build` | TypeScript check → Vite production build → sitemap + robots generation |
-| `npm run preview` | Serves the built `dist/` locally |
-| `npm run typecheck` | Standalone `tsc --noEmit` against the frontend |
-| `npm run lint` | ESLint across the repo |
+| `npm run dev` | Backend (tsx) + frontend (Vite) in parallel via concurrently |
+| `npm run build` | Vite production build + sitemap generation |
+| `npm run preview` | Preview the production build locally |
+| `npm run typecheck` | `tsc --noEmit` against the frontend app |
+| `npm run lint` | ESLint with TypeScript rules |
 
-The `build` writes to `dist/` (project root) and runs [scripts/generate-sitemap.mjs](scripts/generate-sitemap.mjs) afterward to produce `dist/sitemap.xml` and `dist/robots.txt`.
+### One-off operational scripts
 
----
-
-## Environment Variables
-
-Full reference in [.env.example](.env.example). Required at minimum for production:
-
-| Variable | Where used | Notes |
-|---|---|---|
-| `SITE_URL` | Backend | Public origin, used in email links + Stripe success URLs |
-| `SUPABASE_URL` | Backend | Project URL from Supabase dashboard |
-| `SUPABASE_SERVICE_ROLE_KEY` | Backend | **Service role**, not anon. Bypasses RLS. Server-only. |
-| `RESEND_API_KEY` | Backend | Without this, emails are logged but not sent (dev-friendly) |
-| `RESEND_FROM_EMAIL` | Backend | e.g. `Big Ron Jones <ron@bigronjones.com>` |
-| `RESEND_AUDIENCE_ID` | Backend | Optional — newsletter list ID |
-| `CONTACT_INBOX_EMAIL` | Backend | Where contact-form messages route |
-| `STRIPE_SECRET_KEY` | Backend | Without this, `/api/checkout` falls back to lead capture |
-| `GOOGLE_API_KEY` | Backend | For `/api/generate-blogs` |
-| `CRON_SECRET` | Backend | Bearer token protecting `/api/send-sequence` |
-| `VITE_GA_ID` | Frontend | Google Analytics 4 measurement ID (optional) |
-
-Anything prefixed `VITE_` is exposed to the browser; everything else is server-only.
-
----
-
-## Lead-Generation Funnel
-
-The conversion flow: **Instagram → Landing Page → Form → PDF Delivery → Multi-Day Nurture Sequence**.
-
-```
-   Instagram link with ?utm_source=instagram
-            │
-            ▼
-   /free/:slug landing page  ──fetch──▶  GET  /api/lead-magnet?slug=…
-            │                                       │
-            │ User submits form                     ▼
-            ▼                              Supabase: lead_magnets
-   POST /api/capture-lead
-            │
-            ├─▶  Validate with Zod (shared/lib/leadSchemas.ts)
-            ├─▶  Upsert into Supabase: leads (email, magnet)
-            ├─▶  Send PDF email via Resend
-            └─▶  Mark pdf_sent = true, increment download_count
-                          │
-                          ▼
-   (next morning, Vercel Cron at 9 AM ET)
-   GET  /api/send-sequence  (Authorization: Bearer $CRON_SECRET)
-            │
-            ├─▶  SELECT leads WHERE next_email_due_at <= NOW
-            ├─▶  Find next email_sequences row for each lead's magnet
-            ├─▶  Send nurture email via Resend
-            └─▶  Update sequence_day, schedule next due date
-                          │
-                          ▼
-   User clicks unsubscribe link in any email
-   GET  /api/unsubscribe?email=…&magnet=…
-            │
-            └─▶  Mark sequence_paused = true, status = 'unsubscribed'
-```
-
-**Defensive guarantees in [backend/api/capture-lead.ts](backend/api/capture-lead.ts):**
-
-1. Zod runs before any DB or email work; bad payloads return 422 immediately.
-2. Lead is saved to Supabase **before** sending email — if Resend dies, the lead is persisted with `pdf_sent=false` and can be replayed.
-3. Upsert on `(email, lead_magnet_slug)` — re-submissions update instead of erroring on the unique constraint.
-4. Email failures don't fail the request; logged for replay, success returned to user as long as the lead was saved.
-5. `List-Unsubscribe` + `List-Unsubscribe-Post` headers on every send (Gmail/Yahoo bulk-sender compliance).
-
----
-
-## Routing
-
-Routes are declared in [frontend/src/App.tsx](frontend/src/App.tsx). Two layout groups:
-
-```tsx
-<Routes>
-  {/* Standalone — no navbar, focused conversion page */}
-  <Route path="/free/:slug" element={<FreeLeadMagnet />} />
-
-  {/* Site chrome (navbar + footer) */}
-  <Route element={<ChromeLayout />}>
-    <Route path="/" element={<Home />} />
-    <Route path="/about" element={<About />} />
-    <Route path="/programs/:slug" element={<ProgramDetail />} />
-    <Route path="/blog/:slug" element={<BlogArticle />} />
-    {/* …16 more routes… */}
-    <Route path="*" element={<NotFound />} />
-  </Route>
-</Routes>
-```
-
-| Route | Purpose |
+| Script | Purpose |
 |---|---|
-| `/` | Home (hero, sections, testimonials, blog, CTA) |
-| `/about` | Story, philosophy, timeline |
-| `/programs` + `/programs/:slug` | Trial, Men's Alliance, Women's Wellness |
-| `/team` | Ron, Sean, Dr. Shelia |
-| `/shop` + `/shop/:slug` | Products + private calls |
-| `/consult` | 1-on-1 call booking |
-| `/blog` + `/blog/:slug` | Daily AI-generated articles |
-| `/testimonials` | Client stories |
-| `/apply` | 3-step program application |
-| `/checkout` + `/checkout/success` | Stripe checkout flow |
-| `/contact` | Contact form |
-| `/free/:slug` | Lead magnet landing (Instagram-targeted) |
-| `/privacy`, `/terms`, `/refund`, `/shipping-policy` | Legal pages |
+| `npx tsx scripts/setup-admin.ts` | Reconcile admin state with `.env` allowlist |
+| `npx tsx scripts/create-admin-user.ts` | Create a single admin auth user with password (legacy path) |
+| `node scripts/resend-pending-leads.mjs` | Retry email delivery for every lead where `pdf_sent = false` |
 
 ---
 
-## API Endpoints
+## Responsive design
 
-All under `/api/*`. Vercel rewrites them to `/backend/api/*` per [vercel.json](vercel.json).
+Every page is responsive across mobile (375px) → tablet (768px) → desktop (1024px+):
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| `POST` | `/api/apply` | Program application — Resend to inbox + applicant confirmation |
-| `GET` | `/api/blogs` | Fetch blog list or single by slug |
-| `POST` | `/api/capture-lead` | Lead funnel ingest (Supabase + Resend PDF) |
-| `POST` | `/api/checkout` | Stripe Checkout session creation |
-| `POST` | `/api/contact` | Contact form → Resend |
-| `POST` | `/api/generate-blogs` | Gemini AI blog generation (3 posts/day) |
-| `GET` | `/api/lead-magnet?slug=` | Public lead-magnet metadata (edge-cached) |
-| `POST` | `/api/newsletter` | Resend audience signup + welcome email |
-| `GET` | `/api/send-sequence` | Cron-protected nurture sender |
-| `GET/POST` | `/api/unsubscribe` | One-click compliant opt-out |
+- **Mobile-first inputs** — all form fields use `text-base sm:text-sm` so iOS Safari doesn't auto-zoom on focus
+- **Admin drawer** — the admin sidebar is a slide-in drawer with hamburger menu on `<lg`, native rail on `lg+`
+- **Grid stacking** — every multi-column layout uses explicit `grid-cols-1` defaults then progressive `sm:` / `md:` / `lg:` columns
+- **Table overflow** — admin tables wrapped in `overflow-x-auto` containers with a `min-w-*` floor so they scroll horizontally rather than crush on phones
+- **Native cursor** — the decorative custom cursor coexists with the native pointer; native is never hidden so links/buttons always read as clickable
+
+---
+
+## Security & secrets
+
+- **`.env` is gitignored.** All sensitive keys (Supabase service role, Stripe secret, SMTP password, Calendly webhook secret) live there.
+- **Service-role key is server-only.** `backend/lib/supabase.ts` reads it. Never imported from `frontend/`.
+- **RLS on every public table.** `leads` has NO public policies — every read/write goes through the service-role server. `lead_magnets` allows public read for active rows only.
+- **Admin endpoints gated server-side.** Every `backend/api/admin/*.ts` calls `requireAdmin()` which verifies the Supabase bearer token and the `users.role` column. The UI guard (`AdminGuard.tsx`) is convenience only.
+- **Stripe webhook signature.** All Stripe webhooks verify the signing secret. Calendly webhooks verify HMAC-SHA256.
+- **CSRF posture:** API endpoints accept JSON only, no cookie-state mutations, bearer-token auth.
 
 ---
 
 ## Deployment
 
-Configured for **Vercel** out of the box. Push to `main` → auto-deploy.
+Deploys to Vercel. `vercel.json` defines:
 
-- **Frontend** is built by `npm run build` and served from `dist/`.
-- **Backend** functions are auto-discovered from `backend/api/**/*.ts` per the `functions` glob in [vercel.json](vercel.json).
-- **SPA routes** are handled by the `/((?!api/).*)` rewrite that falls back to `index.html`.
-- **API routes** are bridged from `/api/*` to `/backend/api/*` via rewrite.
-- **Cron**: configure Vercel Cron to hit `/api/send-sequence` daily; Vercel auto-injects `Authorization: Bearer $CRON_SECRET`.
+- **Rewrites** — `/api/*` → `backend/api/*`, everything else → `/index.html` (SPA fallback)
+- **Functions** — `backend/api/**/*.ts` run on `@vercel/node@5.1.0` (Node 20)
+- **Cron** — `/api/cron/email-scheduler` daily at 06:00 UTC
 
-For local function testing: `npm install -g vercel && vercel dev`. This boots the SPA + functions on the same port and resolves `/api/*` correctly.
+Env vars must be set in Vercel project settings (Production + Preview). Use the same names as `.env.example`.
 
 ---
 
-## Database Setup
+## Conventions
 
-The lead-funnel feature requires a Supabase project. One-time setup:
-
-1. Create a project at [supabase.com](https://supabase.com).
-2. In the SQL Editor, run [backend/sql/01_schema.sql](backend/sql/01_schema.sql) — creates `lead_magnets`, `leads`, `email_sequences`, `blog_posts` and their RLS policies.
-3. Run [backend/sql/02_seed_lead_magnets.sql](backend/sql/02_seed_lead_magnets.sql) — seeds the initial three magnets.
-4. Drop the actual PDFs into [frontend/public/assets/pdfs/](frontend/public/assets/pdfs/) using the filenames declared in the seed file.
-5. Settings → API → copy `Project URL` (`SUPABASE_URL`) and the **service_role** key (`SUPABASE_SERVICE_ROLE_KEY`) into your env vars.
-
-For the nurture sequence to actually do anything, insert rows into `email_sequences`. Body paragraphs are joined with `||` as the delimiter:
-
-```sql
-insert into public.email_sequences
-  (lead_magnet_id, day_number, subject, body_html, cta_text, cta_url)
-values (
-  (select id from public.lead_magnets where slug = 'mass-gain-guide'),
-  1,
-  'The #1 mistake people make in week 1',
-  'First paragraph.||Second paragraph.||Third paragraph with a CTA hint.',
-  'Book a Call with Ron',
-  'https://bigronjones.com/consult'
-);
-```
+- **No CSS modules / styled-components.** Tailwind utility classes only. Brand tokens in `frontend/src/styles/globals.css`.
+- **Brand colors:** Red `#E8192C` · Black `#050505` · Card `#0d0d0d` · Border `#1c1c1c`.
+- **Fonts:** Bebas Neue (display) · DM Sans (body) · DM Mono (labels). Loaded from Google Fonts.
+- **Validation.** Every form payload is validated on both ends with the same Zod schema in `shared/lib/leadSchemas.ts`.
+- **Email delivery contract.** Save lead → THEN send email. If email fails, lead is still in DB and can be retried via `resend-pending-leads.mjs`.
 
 ---
 
-## Contributing
+## License
 
-This is a private project. For team members:
-
-```bash
-# Always branch off main
-git checkout -b feat/your-feature
-
-# Run the full check before pushing
-npm run typecheck && npm run build
-
-# Push and open a PR against main
-git push -u origin feat/your-feature
-```
-
-**House rules:**
-
-- Frontend code never imports from `backend/`. Period.
-- New API routes go in `backend/api/<name>.ts` with `export default async function handler(req: Request): Promise<Response>`.
-- Schemas that both sides validate go in `shared/lib/`.
-- Run `npm run typecheck` before pushing — `npm run build` skips strict TS for build speed.
-- Use the existing path aliases (`@/components`, `@/data`, etc.) — don't introduce new ones without updating both `vite.config.ts` and `tsconfig.app.json`.
-
----
-
-<div align="center">
-
-**Built for real life. No perfect required.**
-
-— Big Ron Jones
-
-</div>
+Proprietary. © BigRonJones® LLC. All rights reserved.

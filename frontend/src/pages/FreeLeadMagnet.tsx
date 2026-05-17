@@ -149,7 +149,7 @@ export default function FreeLeadMagnetPage() {
           </p>
         </div>
 
-        <div className="max-w-[1100px] mx-auto px-6 py-16 grid lg:grid-cols-2 gap-16 items-center min-h-[calc(100vh-40px)]">
+        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-10 sm:py-14 lg:py-16 grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center min-h-[calc(100vh-40px)]">
           {/* LEFT — Offer details */}
           <div>
             <motion.div
@@ -234,11 +234,11 @@ export default function FreeLeadMagnetPage() {
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="bg-[#0d0d0d] border border-[#1c1c1c] p-8 lg:p-10"
+            className="bg-[#0d0d0d] border border-[#1c1c1c] p-5 sm:p-6 md:p-8 lg:p-10 w-full"
           >
             <div className="mb-6">
               <div className="w-8 h-[2px] bg-[#E8192C] mb-4" />
-              <h2 className="font-['Bebas_Neue'] text-3xl text-white leading-tight mb-2">
+              <h2 className="font-['Bebas_Neue'] text-2xl sm:text-3xl text-white leading-tight mb-2">
                 {magnet.cta_text?.toUpperCase() || "GET INSTANT ACCESS"}
               </h2>
               <p className="font-['DM_Sans'] text-white/50 text-sm">

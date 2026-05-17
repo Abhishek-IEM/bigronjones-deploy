@@ -28,6 +28,7 @@ export default function LeadCaptureForm({
   const [successData, setSuccessData] = useState<{
     firstName: string;
     email: string;
+    emailSent: boolean;
   } | null>(null);
 
   const {
@@ -66,6 +67,7 @@ export default function LeadCaptureForm({
         const successInfo = {
           firstName: result.firstName,
           email: data.email,
+          emailSent: result.emailSent !== false,
         };
         setSuccessData(successInfo);
         setStatus("success");
@@ -97,29 +99,60 @@ export default function LeadCaptureForm({
           <Download size={32} className="text-white" />
         </motion.div>
 
-        <h3 className="font-['Bebas_Neue'] text-4xl text-white mb-3">
-          CHECK YOUR EMAIL,
-          <br />
-          <span className="text-[#E8192C]">
-            {successData.firstName.toUpperCase()}.
-          </span>
-        </h3>
+        {successData.emailSent ? (
+          <>
+            <h3 className="font-['Bebas_Neue'] text-4xl text-white mb-3">
+              CHECK YOUR EMAIL,
+              <br />
+              <span className="text-[#E8192C]">
+                {successData.firstName.toUpperCase()}.
+              </span>
+            </h3>
 
-        <p className="font-['DM_Sans'] text-white/60 text-base leading-relaxed max-w-sm mx-auto mb-6">
-          Your guide is on its way to{" "}
-          <span className="text-white font-medium">{successData.email}</span>.
-          Check your inbox &mdash; it should arrive in under 2 minutes.
-        </p>
+            <p className="font-['DM_Sans'] text-white/60 text-base leading-relaxed max-w-sm mx-auto mb-6">
+              Your guide is on its way to{" "}
+              <span className="text-white font-medium">
+                {successData.email}
+              </span>
+              . Check your inbox &mdash; it should arrive in under 2 minutes.
+            </p>
 
-        <p className="font-['DM_Mono'] text-[10px] tracking-[0.25em] text-white/30 uppercase">
-          Check spam if you don&apos;t see it
-        </p>
+            <p className="font-['DM_Mono'] text-[10px] tracking-[0.25em] text-white/30 uppercase">
+              Check spam if you don&apos;t see it
+            </p>
+          </>
+        ) : (
+          <>
+            <h3 className="font-['Bebas_Neue'] text-4xl text-white mb-3">
+              GOT IT,
+              <br />
+              <span className="text-[#E8192C]">
+                {successData.firstName.toUpperCase()}.
+              </span>
+            </h3>
+
+            <p className="font-['DM_Sans'] text-white/60 text-base leading-relaxed max-w-sm mx-auto mb-6">
+              Our email system hit a snag, but your details are saved against{" "}
+              <span className="text-white font-medium">
+                {successData.email}
+              </span>
+              . Ron will send the content over personally within 24 hours.
+            </p>
+
+            <p className="font-['DM_Mono'] text-[10px] tracking-[0.25em] text-white/30 uppercase">
+              No need to resubmit
+            </p>
+          </>
+        )}
       </motion.div>
     );
   }
 
+  // Note: keep text at 16px (text-base) on mobile so iOS Safari doesn't
+  // auto-zoom on focus. Shrink to text-sm only at sm+ where touch keyboards
+  // don't trigger the zoom heuristic.
   const fieldClass = (hasError: boolean) =>
-    `w-full bg-[#0d0d0d] border outline-none px-4 py-3.5 font-['DM_Sans'] text-white text-sm placeholder:text-white/20 transition-colors duration-200 ${
+    `w-full bg-[#0d0d0d] border outline-none px-4 py-3.5 font-['DM_Sans'] text-white text-base sm:text-sm placeholder:text-white/20 transition-colors duration-200 ${
       hasError
         ? "border-red-500/60 focus:border-red-500"
         : "border-[#1c1c1c] focus:border-[#E8192C]"

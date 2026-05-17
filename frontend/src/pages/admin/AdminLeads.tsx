@@ -82,12 +82,12 @@ export default function AdminLeads() {
 
   return (
     <AdminLayout>
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
           <p className="font-['DM_Mono'] text-[11px] tracking-[0.3em] text-[#E8192C] mb-1">
             CAPTURED
           </p>
-          <h1 className="font-['Bebas_Neue'] text-4xl text-white">ALL LEADS</h1>
+          <h1 className="font-['Bebas_Neue'] text-3xl sm:text-4xl text-white">ALL LEADS</h1>
         </div>
         <button
           type="button"
@@ -129,7 +129,7 @@ export default function AdminLeads() {
           {error}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-[#0d0d0d] border border-[#1c1c1c] p-16 text-center">
+        <div className="bg-[#0d0d0d] border border-[#1c1c1c] p-8 sm:p-12 lg:p-16 text-center">
           <Mail size={28} className="text-white/20 mx-auto mb-3" />
           <p className="font-['DM_Sans'] text-white/40">
             No leads yet. Share a content link on Instagram to start collecting.

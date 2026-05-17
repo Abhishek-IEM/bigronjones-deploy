@@ -18,7 +18,9 @@ function GoogleIcon() {
 function inputCls(hasError: boolean) {
   return [
     "w-full bg-[#0a0a0a] border outline-none px-4 py-3.5",
-    "font-['DM_Sans'] text-white text-sm placeholder:text-white/20",
+    // text-base on mobile (16px) prevents iOS Safari from auto-zooming on
+    // focus. Shrink to text-sm only at sm+ where the zoom heuristic is off.
+    "font-['DM_Sans'] text-white text-base sm:text-sm placeholder:text-white/20",
     "transition-colors duration-200",
     hasError
       ? "border-red-500/60 focus:border-red-500"

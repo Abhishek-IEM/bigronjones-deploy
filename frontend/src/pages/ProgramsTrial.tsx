@@ -343,7 +343,7 @@ export default function ProgramsTrial() {
               What You Get
             </span>
           </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {FEATURE_CARDS.map((feat, i) => {
               const Icon = feat.icon;
               return (
@@ -372,7 +372,7 @@ export default function ProgramsTrial() {
       {/* How it works — 9 steps */}
       <section className="border-t border-[#1a1a1a] bg-[#070707] py-20">
         <div className="mx-auto max-w-[1400px] px-6 md:px-10">
-          <div className="mb-12 grid gap-6 md:grid-cols-[1fr_2fr] md:items-end">
+          <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-[1fr_2fr] md:items-end">
             <div>
               <div className="mb-5 flex items-center gap-3">
                 <span className="h-[1px] w-8 bg-[#E8192C]" />
@@ -503,13 +503,13 @@ export default function ProgramsTrial() {
           </div>
 
           {/* Pricing card */}
-          <div className="grid gap-8 border border-[#1a1a1a] bg-[#0f0f0f] p-8 md:grid-cols-[1.2fr_1fr] md:p-10">
+          <div className="grid grid-cols-1 gap-6 border border-[#1a1a1a] bg-[#0f0f0f] p-5 sm:p-7 md:grid-cols-[1.2fr_1fr] md:gap-8 md:p-10">
             <div>
               <span className="font-['DM_Mono'] text-[10px] uppercase tracking-[0.3em] text-[#E8192C]">
                 7-Day Oversight Trial
               </span>
               <div className="mt-2 flex items-baseline gap-2">
-                <span className="font-['Bebas_Neue'] text-7xl leading-none">
+                <span className="font-['Bebas_Neue'] text-6xl sm:text-7xl leading-none">
                   $149
                 </span>
                 <span className="font-['DM_Mono'] text-[11px] uppercase tracking-[0.18em] text-white/40">

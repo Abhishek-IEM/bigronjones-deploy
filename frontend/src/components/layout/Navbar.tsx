@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  ShieldCheck,
   ShoppingBag,
   Sparkles,
   User as UserIcon,
@@ -226,6 +227,44 @@ export default function Navbar() {
                         )}
                       </div>
 
+                      {/* Admin section — visible only when the signed-in user
+                          has role=admin or role=super_admin (read from /api/me
+                          via useTrialStatus). Placed above member content so
+                          the workspace is one click away. */}
+                      {trial.isAdmin && (
+                        <div className="border-b border-[#1a1a1a] py-2">
+                          <Link
+                            to="/admin"
+                            onClick={() => setAccountOpen(false)}
+                            className="mx-2 my-1 flex items-center justify-between gap-3 border border-[#E8192C]/40 bg-[#E8192C]/10 px-3 py-3 transition-colors hover:bg-[#E8192C]/20"
+                          >
+                            <span className="flex items-center gap-2 font-['DM_Mono'] text-[11px] uppercase tracking-[0.2em] text-white">
+                              <ShieldCheck size={14} />
+                              Admin Dashboard
+                            </span>
+                            <span className="font-['DM_Mono'] text-[9px] tracking-wider text-[#E8192C]">
+                              {trial.role === "super_admin" ? "SUPER" : "ADMIN"}
+                            </span>
+                          </Link>
+                          <Link
+                            to="/admin/content"
+                            onClick={() => setAccountOpen(false)}
+                            className="flex items-center gap-2 px-4 py-2.5 font-['DM_Mono'] text-[10px] uppercase tracking-[0.2em] text-white/60 transition-colors hover:bg-[#111] hover:text-white"
+                          >
+                            <LayoutDashboard size={12} />
+                            Manage Content
+                          </Link>
+                          <Link
+                            to="/admin/leads"
+                            onClick={() => setAccountOpen(false)}
+                            className="flex items-center gap-2 px-4 py-2.5 font-['DM_Mono'] text-[10px] uppercase tracking-[0.2em] text-white/60 transition-colors hover:bg-[#111] hover:text-white"
+                          >
+                            <UserIcon size={12} />
+                            View Leads
+                          </Link>
+                        </div>
+                      )}
+
                       {/* Members-only section — paid users see a prominent
                           dashboard CTA as the first item. Hidden entirely for
                           non-purchasers, so the only path to enrollment for
@@ -443,6 +482,22 @@ export default function Navbar() {
                 >
                   {primaryCta.label}
                 </Link>
+                {/* Admin-only — quick path into the admin workspace on mobile. */}
+                {isAuthenticated && trial.isAdmin && (
+                  <Link
+                    to="/admin"
+                    onClick={() => setOpen(false)}
+                    className="inline-flex items-center justify-between gap-3 self-start border border-[#E8192C]/40 bg-[#E8192C]/10 px-6 py-3 font-['DM_Mono'] text-[11px] uppercase tracking-[0.2em] text-white"
+                  >
+                    <span className="flex items-center gap-2">
+                      <ShieldCheck size={14} />
+                      Admin Dashboard
+                    </span>
+                    <span className="text-[#E8192C]">
+                      {trial.role === "super_admin" ? "SUPER" : "ADMIN"}
+                    </span>
+                  </Link>
+                )}
                 {/* Members-only — a second clear path to the trial dashboard
                     on mobile, so paid users don't have to hunt for it. */}
                 {isAuthenticated && trial.hasTrial && (

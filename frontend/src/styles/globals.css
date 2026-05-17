@@ -57,28 +57,14 @@ html {
   overflow-x: hidden;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  html {
-    cursor: none;
-  }
-  html a,
-  html button,
-  html [role="button"] {
-    cursor: none;
-  }
-}
+/* Native cursor is always shown. The CustomCursor visual still renders on
+   top via mix-blend-difference for marketing pages, but the native pointer
+   is never hidden — otherwise interactive elements with darker backgrounds
+   (admin sidebar items, modals, etc.) make the cursor effectively invisible
+   because the blend-difference math collapses near the same hue. */
 
-/* Touch devices: never apply cursor: none, never render any custom cursor element */
+/* Touch devices: hide the decorative custom cursor element entirely */
 @media (hover: none) and (pointer: coarse) {
-  html,
-  html a,
-  html button,
-  html [role="button"],
-  *,
-  *::before,
-  *::after {
-    cursor: auto !important;
-  }
   .custom-cursor {
     display: none !important;
   }
