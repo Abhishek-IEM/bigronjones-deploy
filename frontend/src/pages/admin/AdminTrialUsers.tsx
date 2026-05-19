@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, Users as UsersIcon } from "lucide-react";
+import { Search, Trash2, Users as UsersIcon } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
+import { useToast } from "@/components/admin/useToast";
 import {
   adminApi,
   type TrialUserStatus,
+  type TrialAdminUser,
   type TrialAdminUserListResponse,
 } from "@/auth/adminApi";
 
@@ -32,27 +35,51 @@ export default function AdminTrialUsers() {
   const [debounced, setDebounced] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<TrialAdminUser | null>(
+    null,
+  );
+  const [deleting, setDeleting] = useState(false);
+  const { toast, success, error: toastError } = useToast();
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(search.trim()), 250);
     return () => clearTimeout(t);
   }, [search]);
 
-  useEffect(() => {
-    let mounted = true;
+  const load = useCallback(async () => {
     setLoading(true);
-    adminApi
-      .trialUsers({ status: filter, search: debounced })
-      .then((d) => mounted && setData(d))
-      .catch((err: Error) => mounted && setError(err.message))
-      .finally(() => mounted && setLoading(false));
-    return () => {
-      mounted = false;
-    };
+    try {
+      const d = await adminApi.trialUsers({ status: filter, search: debounced });
+      setData(d);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load");
+    } finally {
+      setLoading(false);
+    }
   }, [filter, debounced]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const counts = data?.counts ?? {};
   const users = useMemo(() => data?.users ?? [], [data]);
+
+  async function confirmDelete() {
+    if (!pendingDelete) return;
+    setDeleting(true);
+    try {
+      await adminApi.deleteTrialUser(pendingDelete.id);
+      success(`${pendingDelete.name || pendingDelete.email} removed.`);
+      setPendingDelete(null);
+      await load();
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : "Delete failed");
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   return (
     <AdminLayout>
@@ -121,21 +148,25 @@ export default function AdminTrialUsers() {
         </div>
       ) : (
         <div className="border border-[#1c1c1c] bg-[#0d0d0d]">
-          <div className="grid grid-cols-[1.5fr_1fr_0.7fr_0.6fr_0.6fr] gap-4 border-b border-[#1c1c1c] px-5 py-3 font-['DM_Mono'] text-[10px] uppercase tracking-[0.2em] text-white/40">
+          <div className="grid grid-cols-[1.5fr_1fr_0.7fr_0.6fr_0.6fr_40px] gap-4 border-b border-[#1c1c1c] px-5 py-3 font-['DM_Mono'] text-[10px] uppercase tracking-[0.2em] text-white/40">
             <span>Member</span>
             <span>Status</span>
             <span>Program</span>
             <span>Day</span>
             <span>Joined</span>
+            <span />
           </div>
           <ul>
             {users.map((u) => {
               const sLabel = STATUS_LABELS[u.status] ?? STATUS_LABELS.lead;
               return (
-                <li key={u.id} className="border-b border-[#1c1c1c] last:border-b-0">
+                <li
+                  key={u.id}
+                  className="group relative border-b border-[#1c1c1c] last:border-b-0 hover:bg-[#161616]"
+                >
                   <Link
                     to={`/admin/trial/users/${u.id}`}
-                    className="grid grid-cols-[1.5fr_1fr_0.7fr_0.6fr_0.6fr] items-center gap-4 px-5 py-4 transition-colors hover:bg-[#161616]"
+                    className="grid grid-cols-[1.5fr_1fr_0.7fr_0.6fr_0.6fr_40px] items-center gap-4 px-5 py-4 transition-colors"
                   >
                     <div className="min-w-0">
                       <p className="truncate font-['DM_Sans'] text-sm text-white">
@@ -166,13 +197,58 @@ export default function AdminTrialUsers() {
                         day: "numeric",
                       })}
                     </span>
+                    <span />
                   </Link>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setPendingDelete(u);
+                    }}
+                    aria-label={`Delete ${u.name || u.email}`}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-2 text-white/25 opacity-0 transition-all hover:bg-[#E8192C]/10 hover:text-[#E8192C] group-hover:opacity-100 focus:opacity-100"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </li>
               );
             })}
           </ul>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        destructive
+        busy={deleting}
+        title={`Remove ${pendingDelete?.name || pendingDelete?.email || "this user"}?`}
+        message={
+          <>
+            This soft-deletes the user — their orders, completions, and activity
+            log stay intact for the audit trail. They will no longer appear in
+            admin lists or stats.
+            {pendingDelete?.converted_to_paid && (
+              <>
+                <br />
+                <span className="text-[#E8192C]">
+                  Heads up: this user has converted to a paid program.
+                </span>
+              </>
+            )}
+            <br />
+            <span className="text-white/40">
+              You can restore them by clearing <code>deleted_at</code> in
+              Supabase if needed.
+            </span>
+          </>
+        }
+        confirmLabel="Remove"
+        onConfirm={confirmDelete}
+        onCancel={() => !deleting && setPendingDelete(null)}
+      />
+
+      {toast}
     </AdminLayout>
   );
 }

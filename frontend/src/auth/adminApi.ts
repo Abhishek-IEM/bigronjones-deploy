@@ -298,7 +298,12 @@ export const adminApi = {
   },
 
   async listLeads(
-    opts: { contentId?: string; limit?: number; offset?: number } = {},
+    opts: {
+      contentId?: string;
+      q?: string;
+      limit?: number;
+      offset?: number;
+    } = {},
   ): Promise<{
     items: Lead[];
     total: number;
@@ -307,10 +312,37 @@ export const adminApi = {
   }> {
     const params = new URLSearchParams();
     if (opts.contentId) params.set("content_id", opts.contentId);
+    if (opts.q) params.set("q", opts.q);
     if (opts.limit) params.set("limit", String(opts.limit));
     if (opts.offset) params.set("offset", String(opts.offset));
     const qs = params.toString();
     const res = await authedFetch(`/api/admin/leads${qs ? `?${qs}` : ""}`);
+    return jsonOrThrow(res);
+  },
+
+  async deleteLeads(ids: string[]): Promise<{ ok: true; deleted: number }> {
+    const res = await authedFetch("/api/admin/leads", {
+      method: "DELETE",
+      body: JSON.stringify(ids.length === 1 ? { id: ids[0] } : { ids }),
+    });
+    return jsonOrThrow(res);
+  },
+
+  async deleteFeedback(
+    ids: string[],
+  ): Promise<{ ok: true; deleted: number }> {
+    const res = await authedFetch("/api/admin/trial-feedback", {
+      method: "DELETE",
+      body: JSON.stringify(ids.length === 1 ? { id: ids[0] } : { ids }),
+    });
+    return jsonOrThrow(res);
+  },
+
+  async deleteTrialUser(id: string): Promise<{ ok: true; id: string }> {
+    const res = await authedFetch("/api/admin/trial-users", {
+      method: "DELETE",
+      body: JSON.stringify({ id }),
+    });
     return jsonOrThrow(res);
   },
 

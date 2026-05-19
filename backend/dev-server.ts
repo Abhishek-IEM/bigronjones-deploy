@@ -231,7 +231,10 @@ const server = http.createServer(async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", FRONTEND_ORIGIN);
   }
   res.setHeader("Vary", "Origin");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+  );
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization, Cookie",
@@ -518,13 +521,41 @@ const server = http.createServer(async (req, res) => {
           : body.programType === "womens"
             ? " — Women's"
             : "";
-      const line =
-        checkoutType === "phase2"
-          ? phase2Plans[body.plan || "full"]
-          : {
-              name: `7-Day Oversight Trial${programLabel}`,
-              unitAmount: 14900,
-            };
+
+      // Shop purchases use each cart item as its own Stripe line at the real
+      // per-item price. Trial/phase2 use a single synthesized line at the
+      // fixed plan price. Without the "shop" branch, the trial line ($149)
+      // would silently override the actual cart total — buyers of a $79.99
+      // call would be charged $149 and routed to Ron's trial-only Calendly.
+      const isShop = checkoutType === "shop";
+      const lineItems = isShop
+        ? items.map((i) => ({
+            price_data: {
+              currency: "usd" as const,
+              product_data: { name: i.name },
+              unit_amount: Math.round(i.price * 100),
+            },
+            quantity: i.quantity,
+          }))
+        : [
+            (() => {
+              const line =
+                checkoutType === "phase2"
+                  ? phase2Plans[body.plan || "full"]
+                  : {
+                      name: `7-Day Oversight Trial${programLabel}`,
+                      unitAmount: 14900,
+                    };
+              return {
+                price_data: {
+                  currency: "usd" as const,
+                  product_data: { name: line.name },
+                  unit_amount: line.unitAmount,
+                },
+                quantity: 1,
+              };
+            })(),
+          ];
 
       // dev-server.ts only runs locally — always redirect Stripe back to the
       // Vite frontend on localhost. Never use SITE_URL here (that's the
@@ -533,16 +564,7 @@ const server = http.createServer(async (req, res) => {
 
       const session = await stripe.checkout.sessions.create({
         mode: "payment",
-        line_items: [
-          {
-            price_data: {
-              currency: "usd",
-              product_data: { name: line.name },
-              unit_amount: line.unitAmount,
-            },
-            quantity: 1,
-          },
-        ],
+        line_items: lineItems,
         // Always have Stripe collect an email so guest orders are reachable.
         ...(sessionUser
           ? { customer_email: sessionUser.appUser.email }
@@ -553,7 +575,9 @@ const server = http.createServer(async (req, res) => {
           body.successUrl ||
           (checkoutType === "trial"
             ? `${baseUrl}/trial/success?session_id={CHECKOUT_SESSION_ID}`
-            : `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`),
+            : `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}&items=${encodeURIComponent(
+                items.map((i) => i.slug).join(","),
+              )}`),
         cancel_url:
           body.cancelUrl ||
           (checkoutType === "trial"
@@ -562,7 +586,12 @@ const server = http.createServer(async (req, res) => {
         metadata: {
           source: "bigronjones_local_dev",
           checkoutType,
-          plan: checkoutType === "phase2" ? body.plan || "full" : "trial",
+          plan:
+            checkoutType === "phase2"
+              ? body.plan || "full"
+              : checkoutType === "shop"
+                ? "shop"
+                : "trial",
           programType: body.programType || "",
           userId: sessionUser?.appUser.id ?? "guest",
           userEmail: sessionUser?.appUser.email ?? body.email ?? "",

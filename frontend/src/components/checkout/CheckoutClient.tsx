@@ -58,6 +58,12 @@ export default function CheckoutClient() {
     setSubmitting(true);
     try {
       const payload = {
+        // Shop cart purchases — backend uses the actual cart items as Stripe
+        // line items and redirects to /success (not /trial/success).
+        // Without this, the backend defaults to checkoutType="trial" and
+        // forces the $149 trial line, charging the wrong amount and sending
+        // buyers to Ron's discovery-call calendar regardless of what they bought.
+        checkoutType: "shop" as const,
         total: subtotal,
         items: checkoutItems.map((i) => ({
           id: i.id,

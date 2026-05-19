@@ -40,7 +40,7 @@ const faqs = [
   },
   {
     q: "What happens after I book?",
-    a: "You'll receive a calendar link to schedule your 60-minute slot, plus a short intake form so we can show up prepared with your context.",
+    a: "Right after payment, you'll land on a confirmation page where you can pick your 60-minute slot on the spot — the calendar invite arrives in your inbox the moment you book. A short intake form follows so we show up prepared with your context.",
   },
   {
     q: "Do you record the call?",

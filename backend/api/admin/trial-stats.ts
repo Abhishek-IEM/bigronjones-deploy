@@ -23,6 +23,11 @@ export default async function handler(req: Request): Promise<Response> {
   const last7d = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
   const last24h = new Date(now - 24 * 60 * 60 * 1000).toISOString();
 
+  // Soft-deleted users are filtered out of every count. If the migration
+  // hasn't been run the .is("deleted_at", ...) calls will return an error
+  // result; we treat that as 0 rather than throwing, so the dashboard still
+  // renders (admin sees a clearer error only when they try to delete).
+
   // Independent counts run in parallel.
   const [
     totalUsers,
@@ -36,26 +41,33 @@ export default async function handler(req: Request): Promise<Response> {
     recentActivity,
     recentFeedback,
   ] = await Promise.all([
-    supabase.from("users").select("id", { count: "exact", head: true }),
     supabase
       .from("users")
       .select("id", { count: "exact", head: true })
-      .eq("payment_status", "paid"),
+      .is("deleted_at", null),
+    supabase
+      .from("users")
+      .select("id", { count: "exact", head: true })
+      .eq("payment_status", "paid")
+      .is("deleted_at", null),
     // "Active" = booked Calendly + trial started + not yet completed
     supabase
       .from("users")
       .select("id", { count: "exact", head: true })
       .eq("has_booked_calendly", true)
       .not("trial_start_date", "is", null)
-      .is("trial_completed_at", null),
+      .is("trial_completed_at", null)
+      .is("deleted_at", null),
     supabase
       .from("users")
       .select("id", { count: "exact", head: true })
-      .not("trial_completed_at", "is", null),
+      .not("trial_completed_at", "is", null)
+      .is("deleted_at", null),
     supabase
       .from("users")
       .select("id", { count: "exact", head: true })
-      .gte("created_at", last7d),
+      .gte("created_at", last7d)
+      .is("deleted_at", null),
     supabase
       .from("day_completions")
       .select("id", { count: "exact", head: true }),

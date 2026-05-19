@@ -150,6 +150,17 @@ create policy "activity_own" on public.user_activity_log
   );
 
 -- =====================================================================
+-- SOFT-DELETE — admin "delete user" stamps this column instead of
+-- removing the row, preserving order/completion history for audits.
+-- =====================================================================
+alter table public.users
+  add column if not exists deleted_at timestamptz;
+
+create index if not exists users_active_idx
+  on public.users(created_at desc)
+  where deleted_at is null;
+
+-- =====================================================================
 -- DONE
 -- After this runs, hard-refresh the dashboard. The auth/me/check-in errors
 -- you were seeing in the browser console should disappear and check-ins

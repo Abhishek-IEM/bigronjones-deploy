@@ -19,7 +19,7 @@ type CheckoutBody = {
   total?: number;
   successUrl?: string;
   cancelUrl?: string;
-  checkoutType?: "trial" | "phase2";
+  checkoutType?: "trial" | "phase2" | "shop";
   plan?: "full" | "six" | "thirtySix";
   programType?: "mens" | "womens";
   email?: string;
@@ -86,15 +86,33 @@ async function upsertTrialUser(
   const cleanEmail = email.toLowerCase().trim();
   if (!cleanEmail) return;
   const supabase = createServerSupabase();
+
+  // Read first so we never overwrite an already-paid user back to "pending".
+  // Previously this upsert hardcoded payment_status: "pending" on every
+  // checkout POST — meaning a paid customer who clicked the trial CTA again
+  // (return visit, ad retarget) had their row silently downgraded. The
+  // dashboard kept working only because trial_start_date is treated as
+  // authoritative, but it left the navbar and downstream reports lying.
+  const { data: existing } = await supabase
+    .from("users")
+    .select("payment_status")
+    .eq("email", cleanEmail)
+    .maybeSingle();
+
   const updates: Record<string, unknown> = {
     email: cleanEmail,
     name: (name && name.trim()) || cleanEmail.split("@")[0],
-    payment_status: "pending",
     updated_at: new Date().toISOString(),
   };
   if (programType) updates.program_type = programType;
   if (stripeSessionId) updates.stripe_session_id = stripeSessionId;
   if (authUserId) updates.auth_user_id = authUserId;
+  // Only stamp "pending" if there's no row yet, or the prior status was
+  // genuinely unset. Never downgrade from paid.
+  if (!existing || !existing.payment_status) {
+    updates.payment_status = "pending";
+  }
+
   const { error } = await supabase
     .from("users")
     .upsert(updates, { onConflict: "email" });
@@ -144,7 +162,7 @@ export default async function handler(req: Request): Promise<Response> {
   }
 
   // For trial checkouts the cart is implicit ($149) — synthesize a single line
-  // item if the caller didn't pass one. Phase 2 callers always pass items.
+  // item if the caller didn't pass one. Phase 2 and shop callers always pass items.
   const checkoutType = body.checkoutType || "trial";
   let items = (body.items || []).filter(
     (i) => i && typeof i.price === "number" && i.quantity > 0,
@@ -161,6 +179,11 @@ export default async function handler(req: Request): Promise<Response> {
       },
     ];
   }
+
+  // Guard the price overrides below. checkoutLine returns the trial $149
+  // line by default — if a shop request somehow falls through without
+  // checkoutType: "shop", we'd mis-charge the buyer. Be explicit instead.
+  const isShop = checkoutType === "shop";
 
   if (items.length === 0) {
     console.warn("[checkout] No items in cart");
@@ -210,31 +233,52 @@ export default async function handler(req: Request): Promise<Response> {
       process.env.SITE_URL ||
       "http://localhost:3000"
     : process.env.VITE_SITE_URL || "http://localhost:3000";
-  const line = checkoutLine(checkoutType, body.plan, body.programType);
+
+  // Shop purchases: each cart item is its own Stripe line at its real price.
+  // Trial/phase2 purchases: a single synthesized line at the fixed plan price.
+  const lineItems = isShop
+    ? items.map((i) => ({
+        price_data: {
+          currency: "usd" as const,
+          product_data: { name: i.name },
+          unit_amount: Math.round(i.price * 100),
+        },
+        quantity: i.quantity,
+      }))
+    : (() => {
+        const line = checkoutLine(checkoutType, body.plan, body.programType);
+        return [
+          {
+            price_data: {
+              currency: "usd" as const,
+              product_data: { name: line.name },
+              unit_amount: line.unitAmount,
+            },
+            quantity: 1,
+          },
+        ];
+      })();
 
   try {
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       mode: "payment",
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: { name: line.name },
-            unit_amount: line.unitAmount,
-          },
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       ...(appUser
         ? { customer_email: appUser.email }
         : body.email
           ? { customer_email: body.email.toLowerCase().trim() }
           : {}),
+      // Append the purchased slugs to the success URL so the confirmation
+      // page can render the right post-purchase UI (e.g. Sean's Calendly
+      // embed for a nutrition-call buyer) even if the cart was cleared on
+      // the user's other device.
       success_url:
         body.successUrl ||
         (checkoutType === "trial"
           ? `${baseUrl}/trial/success?session_id={CHECKOUT_SESSION_ID}`
-          : `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`),
+          : `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}&items=${encodeURIComponent(
+              items.map((i) => i.slug).join(","),
+            )}`),
       cancel_url:
         body.cancelUrl ||
         (checkoutType === "trial"
@@ -243,7 +287,12 @@ export default async function handler(req: Request): Promise<Response> {
       metadata: {
         source: "bigronjones_website",
         checkoutType,
-        plan: checkoutType === "phase2" ? body.plan || "full" : "trial",
+        plan:
+          checkoutType === "phase2"
+            ? body.plan || "full"
+            : checkoutType === "shop"
+              ? "shop"
+              : "trial",
         programType: body.programType || "",
         userId: appUser?.id ?? "guest",
         userEmail: appUser?.email ?? body.email ?? "",

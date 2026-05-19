@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Clock, ArrowRight } from "lucide-react";
 import { authHeaders } from "@/auth/api";
 import { supabase } from "@/auth/supabase";
+import { refreshTrialStatus } from "@/hooks/useTrialStatus";
 
 const CALENDLY_URL = "https://calendly.com/bigronjonesllc/discovery-call";
 
@@ -65,6 +66,11 @@ export default function TrialSuccess() {
               } catch {
                 // ignore localStorage failures
               }
+              // Nudge every mounted useTrialStatus (navbar etc.) to refetch
+              // /api/me so the dropdown immediately reflects "paid" status —
+              // without this, the user would still see "Start 7-Day Trial"
+              // until they logged out and back in.
+              refreshTrialStatus();
               break;
             }
           } catch (err) {
@@ -86,6 +92,9 @@ export default function TrialSuccess() {
           credentials: "include",
           headers: { ...(await authHeaders()) },
         });
+        // /api/link-trial stamps auth_user_id on the trial row — after which
+        // /api/me will see the user as paid. Refresh so the navbar updates.
+        refreshTrialStatus();
       } catch {
         // non-blocking
       }
@@ -195,6 +204,10 @@ export default function TrialSuccess() {
             error,
           );
         } finally {
+          // Trial-start dates are populated server-side by
+          // /api/booking-completion — refresh so the dashboard chrome shows
+          // "Day 1/7" instead of the pre-booking state.
+          refreshTrialStatus();
           goToDashboard();
         }
       })();

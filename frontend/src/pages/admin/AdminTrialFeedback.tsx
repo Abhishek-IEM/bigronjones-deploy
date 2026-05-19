@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { MessageSquare, Send } from "lucide-react";
+import { MessageSquare, Send, Trash2 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
+import { useToast } from "@/components/admin/useToast";
 import {
   adminApi,
   type TrialAdminFeedbackResponse,
@@ -34,23 +36,40 @@ export default function AdminTrialFeedback() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [pendingDelete, setPendingDelete] = useState<string[] | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const { toast, success, error: toastError } = useToast();
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const d = await adminApi.trialFeedback(tab);
       setData(d);
+      setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load");
     } finally {
       setLoading(false);
     }
-  }
+  }, [tab]);
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab]);
+  }, [load]);
+
+  const items = useMemo(() => data?.feedback ?? [], [data]);
+
+  // Drop selections that no longer exist in the current view (e.g. after
+  // tab switch).
+  useEffect(() => {
+    setSelected((prev) => {
+      const visible = new Set(items.map((i) => i.id));
+      const next = new Set<string>();
+      prev.forEach((id) => visible.has(id) && next.add(id));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [items]);
 
   async function send(completionId: string) {
     if (!reply.trim()) return;
@@ -59,18 +78,62 @@ export default function AdminTrialFeedback() {
       await adminApi.trialReply({ completionId, reply: reply.trim() });
       setReply("");
       setOpenId(null);
+      success("Reply sent.");
       await load();
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : "Failed to send reply");
     } finally {
       setSending(false);
     }
   }
 
   async function markRead(completionId: string) {
-    await adminApi.trialMarkRead(completionId);
-    await load();
+    try {
+      await adminApi.trialMarkRead(completionId);
+      await load();
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : "Failed to mark read");
+    }
   }
 
-  const items = useMemo(() => data?.feedback ?? [], [data]);
+  function toggleOne(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    setSelected((prev) => {
+      if (prev.size === items.length && items.length > 0) return new Set();
+      return new Set(items.map((i) => i.id));
+    });
+  }
+
+  async function confirmDelete() {
+    if (!pendingDelete || pendingDelete.length === 0) return;
+    setDeleting(true);
+    try {
+      const res = await adminApi.deleteFeedback(pendingDelete);
+      success(
+        res.deleted === 1
+          ? "Feedback removed."
+          : `${res.deleted} messages removed.`,
+      );
+      setPendingDelete(null);
+      setSelected(new Set());
+      await load();
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : "Delete failed");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  const allChecked = items.length > 0 && selected.size === items.length;
+  const someChecked = selected.size > 0 && selected.size < items.length;
 
   return (
     <AdminLayout>
@@ -103,6 +166,44 @@ export default function AdminTrialFeedback() {
         })}
       </div>
 
+      {items.length > 0 && (
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <label className="inline-flex cursor-pointer items-center gap-2 font-['DM_Mono'] text-[10px] uppercase tracking-[0.2em] text-white/40 hover:text-white">
+            <input
+              type="checkbox"
+              checked={allChecked}
+              ref={(el) => {
+                if (el) el.indeterminate = someChecked;
+              }}
+              onChange={toggleAll}
+              className="h-4 w-4 cursor-pointer accent-[#E8192C]"
+            />
+            Select all
+          </label>
+          {selected.size > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="font-['DM_Mono'] text-[10px] uppercase tracking-[0.2em] text-white">
+                {selected.size} selected
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelected(new Set())}
+                className="border border-[#1c1c1c] px-3 py-1.5 font-['DM_Mono'] text-[10px] uppercase tracking-[0.2em] text-white/60 hover:text-white"
+              >
+                Clear
+              </button>
+              <button
+                type="button"
+                onClick={() => setPendingDelete(Array.from(selected))}
+                className="inline-flex items-center gap-2 bg-[#E8192C] px-3 py-1.5 font-['DM_Mono'] text-[10px] uppercase tracking-[0.2em] text-white hover:bg-[#b50f1f]"
+              >
+                <Trash2 size={12} /> Delete {selected.size}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {loading ? (
         <div className="flex justify-center py-20">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#E8192C] border-t-transparent" />
@@ -122,15 +223,27 @@ export default function AdminTrialFeedback() {
         <ul className="space-y-3">
           {items.map((f) => {
             const open = openId === f.id;
+            const checked = selected.has(f.id);
             return (
               <li
                 key={f.id}
                 className={
-                  "border bg-[#0d0d0d] p-5 " +
-                  (f.ron_viewed ? "border-[#1c1c1c]" : "border-[#E8192C]/40")
+                  "border bg-[#0d0d0d] p-5 transition-colors " +
+                  (checked
+                    ? "border-[#E8192C]"
+                    : f.ron_viewed
+                      ? "border-[#1c1c1c]"
+                      : "border-[#E8192C]/40")
                 }
               >
                 <div className="flex flex-wrap items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleOne(f.id)}
+                    aria-label="Select message"
+                    className="h-4 w-4 cursor-pointer accent-[#E8192C]"
+                  />
                   <span className="font-['DM_Mono'] text-[10px] uppercase tracking-[0.2em] text-[#E8192C]">
                     Day {f.trial_day}
                   </span>
@@ -144,8 +257,18 @@ export default function AdminTrialFeedback() {
                       New
                     </span>
                   )}
-                  <span className="ml-auto font-['DM_Mono'] text-[9px] tracking-wider text-white/30">
-                    {relTime(f.completed_at)}
+                  <span className="ml-auto flex items-center gap-2">
+                    <span className="font-['DM_Mono'] text-[9px] tracking-wider text-white/30">
+                      {relTime(f.completed_at)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setPendingDelete([f.id])}
+                      aria-label="Delete this message"
+                      className="rounded p-1.5 text-white/30 transition-colors hover:bg-[#E8192C]/10 hover:text-[#E8192C]"
+                    >
+                      <Trash2 size={13} />
+                    </button>
                   </span>
                 </div>
 
@@ -233,6 +356,36 @@ export default function AdminTrialFeedback() {
           })}
         </ul>
       )}
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        destructive
+        busy={deleting}
+        title={
+          pendingDelete && pendingDelete.length > 1
+            ? `Delete ${pendingDelete.length} messages?`
+            : "Delete this message?"
+        }
+        message={
+          <>
+            The message disappears from your inbox. The member's day-completion
+            record itself is preserved.
+            <br />
+            <span className="text-white/40">
+              Already-sent replies are kept. This cannot be undone.
+            </span>
+          </>
+        }
+        confirmLabel={
+          pendingDelete && pendingDelete.length > 1
+            ? `Delete ${pendingDelete.length}`
+            : "Delete"
+        }
+        onConfirm={confirmDelete}
+        onCancel={() => !deleting && setPendingDelete(null)}
+      />
+
+      {toast}
     </AdminLayout>
   );
 }

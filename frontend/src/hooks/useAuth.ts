@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase, type Session, type User } from "@/auth/supabase";
+import { refreshTrialStatus } from "@/hooks/useTrialStatus";
 
 type AuthState = {
   user: User | null;
@@ -51,6 +52,12 @@ export function useAuth(): UseAuthReturn {
           credentials: "include",
           headers: { Authorization: `Bearer ${token}` },
         });
+        // Without this signal, useTrialStatus races against link-trial: it can
+        // call /api/me before the trial row is stamped and end up caching the
+        // user as "no trial" — forcing them to sign out/in to see the
+        // dashboard + admin links. Dispatching a refresh after link-trial
+        // finishes guarantees one fresh /api/me read against the linked state.
+        refreshTrialStatus();
       } catch {
         // non-blocking — server upsert in /api/me is the safety net
       }
