@@ -2,12 +2,11 @@
   "buildCommand": "npm run build:frontend",
   "outputDirectory": "frontend/dist",
   "framework": "vite",
-  "env": [
-    "VITE_STRIPE_PUBLISHABLE_KEY",
-    "VITE_ADMIN_EMAILS",
-    "VITE_API_URL",
-    "SITE_URL"
-  ],
+  "env": {
+    "VITE_STRIPE_PUBLISHABLE_KEY": "Stripe publishable key for live payments",
+    "VITE_API_URL": "Backend API URL",
+    "SITE_URL": "Main site URL"
+  },
   "rewrites": [
     { "source": "/((?!_next|_static|assets).*)", "destination": "/index.html" }
   ]
