@@ -2,7 +2,6 @@
   "buildCommand": "npm run build:frontend",
   "outputDirectory": "frontend/dist",
   "framework": "vite",
-  "root": ".",
   "env": [
     "VITE_STRIPE_PUBLISHABLE_KEY",
     "VITE_ADMIN_EMAILS",
