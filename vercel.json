@@ -1,21 +1,15 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": null,
+  "buildCommand": "npm run build:frontend",
+  "outputDirectory": "frontend/dist",
+  "framework": "vite",
   "root": ".",
-  "functions": {
-    "backend/api/**/*.ts": {
-      "runtime": "@vercel/node@5.1.0"
-    }
-  },
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/backend/api/$1" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  "env": [
+    "VITE_STRIPE_PUBLISHABLE_KEY",
+    "VITE_ADMIN_EMAILS",
+    "VITE_API_URL",
+    "SITE_URL"
   ],
-  "crons": [
-    {
-      "path": "/api/cron/email-scheduler",
-      "schedule": "0 6 * * *"
-    }
+  "rewrites": [
+    { "source": "/((?!_next|_static|assets).*)", "destination": "/index.html" }
   ]
 }

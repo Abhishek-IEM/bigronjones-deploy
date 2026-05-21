@@ -4,13 +4,15 @@ services:
     runtime: node
     region: ohio
     plan: starter
-    buildCommand: npm install
-    startCommand: npm run start
+    buildCommand: cd backend && npm install
+    startCommand: npm start --workspace=backend
     envVars:
       - key: PORT
         value: 8080
       - key: FRONTEND_ORIGIN
-        sync: false
+        value: https://bigronjones.vercel.app
+      - key: NODE_ENV
+        value: production
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
@@ -38,4 +40,8 @@ services:
       - key: SMTP_PASS
         sync: false
       - key: SMTP_FROM_NAME
+        sync: false
+      - key: CONTACT_INBOX_EMAIL
+        sync: false
+      - key: ADMIN_EMAILS
         sync: false

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Sparkles, CheckCircle, Loader2 } from "lucide-react";
-import type { Blog } from "@/lib/blogStore";
+import type { Blog } from "@/lib/blogClient";
 
 type GenState =
   | "idle"

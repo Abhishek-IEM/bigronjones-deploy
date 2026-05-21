@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import DOMPurify from "isomorphic-dompurify";
 import { Calendar, Clock, Share2, Copy, CheckCircle, Zap } from "lucide-react";
-import type { Blog } from "@/lib/blogStore";
+import type { Blog } from "@/lib/blogClient";
 import { formatBlogDate } from "@/lib/blogUtils";
 import ReadingProgressBar from "@/components/blog/ReadingProgressBar";
 import BlogCard from "@/components/blog/BlogCard";

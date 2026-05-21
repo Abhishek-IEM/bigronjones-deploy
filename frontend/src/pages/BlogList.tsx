@@ -1,16 +1,30 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
-import { seedBlogs } from "@/data/seedBlogs";
-import type { Blog } from "@/lib/blogStore";
+import type { Blog } from "@/lib/blogClient";
+import { blogClient } from "@/lib/blogClient";
 import BlogCard from "@/components/blog/BlogCard";
 import BlogFilters from "@/components/blog/BlogFilters";
 import { formatBlogDate } from "@/lib/blogUtils";
 
 export default function BlogListingPage() {
-  const [blogs] = useState<Blog[]>(seedBlogs);
+  const [blogs, setBlogs] = useState<Blog[]>([]);
   const [category, setCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [visibleCount, setVisibleCount] = useState(6);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await blogClient.getAllBlogs();
+        setBlogs(data);
+      } catch (error) {
+        console.error("Failed to load blogs:", error);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   const filtered = useMemo(() => {
     let result = blogs;
@@ -23,17 +37,17 @@ export default function BlogListingPage() {
         (b) =>
           b.title.toLowerCase().includes(q) ||
           b.tags.some((t) => t.toLowerCase().includes(q)) ||
-          b.body.toLowerCase().includes(q)
+          b.body.toLowerCase().includes(q),
       );
     }
     return result;
   }, [blogs, category, search]);
 
   const todayPosts = filtered.filter(
-    (b) => formatBlogDate(b.publishedAt) === "Today"
+    (b) => formatBlogDate(b.publishedAt) === "Today",
   );
   const earlierPosts = filtered.filter(
-    (b) => formatBlogDate(b.publishedAt) !== "Today"
+    (b) => formatBlogDate(b.publishedAt) !== "Today",
   );
 
   const handleCategoryClick = (cat: string) => {
@@ -41,13 +55,21 @@ export default function BlogListingPage() {
     setSearch("");
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        Loading blogs...
+      </div>
+    );
+  }
+
   return (
     <>
-              <title>Blog — Real Talk From Big Ron | BigRonJones</title>
-        <meta
-          name="description"
-          content="Three new posts every morning, written in Ron's voice. Fitness, nutrition, mindset — all of it straight and practical."
-        />
+      <title>Blog — Real Talk From Big Ron | BigRonJones</title>
+      <meta
+        name="description"
+        content="Three new posts every morning, written in Ron's voice. Fitness, nutrition, mindset — all of it straight and practical."
+      />
       <div>
         <section className="relative flex min-h-[40vh] items-end overflow-hidden pb-12 pt-32">
           <img

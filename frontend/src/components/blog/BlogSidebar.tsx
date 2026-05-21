@@ -1,7 +1,5 @@
-
-
 import { Link } from "react-router-dom";
-import type { Blog } from "@/lib/blogStore";
+import type { Blog } from "@/lib/blogClient";
 import { formatBlogDate } from "@/lib/blogUtils";
 import BrandName from "@/components/shared/BrandName";
 
@@ -16,7 +14,11 @@ export default function BlogSidebar({ relatedPosts }: BlogSidebarProps) {
       <div className="rounded-2xl border border-white/10 bg-[#111827] p-6">
         <div className="flex items-center gap-4">
           <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full">
-            <img src="/images/ron/mentality-portrait.jpg" alt="Big Ron Jones" className="object-cover" />
+            <img
+              src="/images/ron/mentality-portrait.jpg"
+              alt="Big Ron Jones"
+              className="object-cover"
+            />
           </div>
           <div>
             <p className="font-heading text-xl tracking-wider text-white">
@@ -57,7 +59,11 @@ export default function BlogSidebar({ relatedPosts }: BlogSidebarProps) {
                 className="group flex gap-3 rounded-xl border border-white/10 bg-[#111827] p-3 transition-all hover:border-brand-blue/30"
               >
                 <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-lg">
-                  <img src={post.coverImage} alt={post.title} className="object-cover" />
+                  <img
+                    src={post.coverImage}
+                    alt={post.title}
+                    className="object-cover"
+                  />
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-white transition-colors group-hover:text-brand-red font-body line-clamp-2">

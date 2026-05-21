@@ -5,10 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "tsx dev-server.ts",
-    "start": "tsx dev-server.ts"
+    "start": "node api/index.js",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "tsx": "^4.21.0"
+    "@types/node": "^20",
+    "@types/nodemailer": "^8.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.6.3"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.79.0",
