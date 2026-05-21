@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx dev-server.ts",
-    "start": "node api/index.js",
+    "start": "tsx dev-server.ts",
     "build": "tsc --noEmit",
     "typecheck": "tsc --noEmit"
   },
